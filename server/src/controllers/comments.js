@@ -1,7 +1,11 @@
 const { validationResult } = require('express-validator');
-const Comment = require('../models/comment');
+const Comment = require('../models/Comment');
 
-// controllers/comments.js - getComments function
+const populateComment = async (commentId) => {
+  return await Comment.findById(commentId)
+    .populate('author', 'username')
+};
+
 exports.getComments = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -28,10 +32,19 @@ exports.getComments = async (req, res) => {
       .populate('author', 'username')
       .populate({
         path: 'replies',
-        populate: {
-          path: 'author',
-          select: 'username'
-        }
+        populate: [
+          {
+            path: 'author',
+            select: 'username'
+          },
+          {
+            path: 'replies',
+            populate: {
+              path: 'author',
+              select: 'username'
+            }
+          }
+        ]
       })
       .sort(sortOptions)
       .skip(skip)
@@ -50,7 +63,6 @@ exports.getComments = async (req, res) => {
   }
 };
 
-// controllers/comments.js - createComment function
 exports.createComment = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -76,16 +88,14 @@ exports.createComment = async (req, res) => {
       );
     }
     
-    // Properly populate the response
-    const populatedComment = await Comment.findById(savedComment._id)
-      .populate('author', 'username')
-      .populate({
-        path: 'replies',
-        populate: {
-          path: 'author',
-          select: 'username'
-        }
-      });
+    // Properly populate the comment with all nested replies
+    const populatedComment = await populateComment(savedComment._id);
+    
+    // Get io instance from app and emit event
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('comment-added', populatedComment);
+    }
     
     res.status(201).json(populatedComment);
   } catch (error) {
@@ -113,46 +123,18 @@ exports.updateComment = async (req, res) => {
     }
     
     comment.content = content;
-    const updatedComment = await comment.save();
+    await comment.save();
     
-    const populatedComment = await Comment.findById(updatedComment._id)
-      .populate('author', 'username');
+    // Properly populate the comment with all nested replies
+    const populatedComment = await populateComment(comment._id);
+    
+    // Get io instance from app and emit event
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('comment-updated', populatedComment);
+    }
     
     res.json(populatedComment);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-exports.deleteComment = async (req, res) => {
-  try {
-    const comment = await Comment.findById(req.params.id);
-    
-    if (!comment) {
-      return res.status(404).json({ message: 'Comment not found' });
-    }
-    
-    // Check if user is the author
-    if (comment.author.toString() !== req.user._id.toString()) {
-      return res.status(401).json({ message: 'Not authorized' });
-    }
-    
-    // If it's a parent comment, delete all replies first
-    if (comment.replies.length > 0) {
-      await Comment.deleteMany({ _id: { $in: comment.replies } });
-    }
-    
-    // If it's a reply, remove it from parent's replies array
-    if (comment.parentComment) {
-      await Comment.findByIdAndUpdate(
-        comment.parentComment,
-        { $pull: { replies: comment._id } }
-      );
-    }
-    
-    await Comment.findByIdAndDelete(req.params.id);
-    
-    res.json({ message: 'Comment removed' });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -180,6 +162,13 @@ exports.likeComment = async (req, res) => {
     
     comment.likes.push(req.user._id);
     await comment.save();
+    
+    const populatedComment = await populateComment(comment._id);
+    
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('reaction-updated', populatedComment);
+    }
     
     res.json({ message: 'Comment liked' });
   } catch (error) {
@@ -210,7 +199,45 @@ exports.dislikeComment = async (req, res) => {
     comment.dislikes.push(req.user._id);
     await comment.save();
     
+  
+    const populatedComment = await populateComment(comment._id);
+    
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('reaction-updated', populatedComment);
+    }
+    
     res.json({ message: 'Comment disliked' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+exports.deleteComment = async (req, res) => {
+  try {
+    const comment = await Comment.findById(req.params.id);
+    
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+    
+    // Check if user is the author
+    if (comment.author.toString() !== req.user._id.toString()) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+    
+
+
+    await Comment.findByIdAndDelete(req.params.id);
+    
+    // Get io instance from app and emit event
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('comment-deleted', { _id: req.params.id });
+    }
+    
+    res.json({ message: 'Comment removed' });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }

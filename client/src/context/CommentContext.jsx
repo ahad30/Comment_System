@@ -1,4 +1,5 @@
-import { createContext, useState, useContext, useEffect } from 'react';
+// context/CommentContext.js
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import io from 'socket.io-client';
 import api from '../services/api';
@@ -24,24 +25,48 @@ export const CommentProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const newSocket = io('http://localhost:5000');
+    // Initialize socket connection
+    const newSocket = io('http://localhost:5000', {
+      withCredentials: true
+    });
+    
     setSocket(newSocket);
 
+    // Set up event listeners
     newSocket.on('comment-added', (comment) => {
-      setComments(prev => [comment, ...prev]);
+      console.log('Comment added via socket:', comment);
+      setComments(prev => {
+        const exists = prev.find(c => c._id === comment._id);
+        if (!exists) {
+          return [comment, ...prev];
+        }
+        return prev;
+      });
     });
-
-    newSocket.on('comment-modified', (comment) => {
+    
+    newSocket.on('comment-updated', (comment) => {
+      console.log('Comment updated via socket:', comment);
       setComments(prev => prev.map(c => 
         c._id === comment._id ? comment : c
       ));
     });
-
-    newSocket.on('comment-removed', (commentId) => {
-      setComments(prev => prev.filter(c => c._id !== commentId));
+    
+    newSocket.on('comment-deleted', (data) => {
+      console.log('Comment deleted via socket:', data);
+      setComments(prev => prev.filter(c => c._id !== data._id));
     });
+    
+    newSocket.on('reaction-updated', (comment) => {
+      console.log('Reaction updated via socket:', comment);
+      setComments(prev => prev.map(c => 
+        c._id === comment._id ? comment : c
+      ));
+    });
+  
 
-    return () => newSocket.disconnect();
+    return () => {
+      newSocket.close();
+    };
   }, []);
 
   useEffect(() => {
@@ -54,11 +79,11 @@ export const CommentProvider = ({ children }) => {
     try {
       setLoading(true);
       const res = await api.get(`/comments?page=${pagination.page}&limit=${pagination.limit}&sortBy=${sortBy}`);
-      setComments(res?.data.comments);
+      setComments(res.data.comments);
       setPagination(prev => ({
         ...prev,
-        totalPages: res?.data.totalPages,
-        totalComments: res?.data.totalComments
+        totalPages: res.data.totalPages,
+        totalComments: res.data.totalComments
       }));
     } catch (error) {
       setError('Failed to fetch comments');
@@ -70,9 +95,6 @@ export const CommentProvider = ({ children }) => {
   const addComment = async (content, parentCommentId = null) => {
     try {
       const res = await api.post('/comments', { content, parentCommentId });
-      if (socket) {
-        socket.emit('new-comment', res.data);
-      }
       return { success: true };
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to add comment';
@@ -82,10 +104,7 @@ export const CommentProvider = ({ children }) => {
 
   const updateComment = async (id, content) => {
     try {
-      const res = await api.put(`/comments/${id}`, { content });
-      if (socket) {
-        socket.emit('comment-updated', res.data);
-      }
+      await api.put(`/comments/${id}`, { content });
       return { success: true };
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to update comment';
@@ -96,9 +115,6 @@ export const CommentProvider = ({ children }) => {
   const deleteComment = async (id) => {
     try {
       await api.delete(`/comments/${id}`);
-      if (socket) {
-        socket.emit('comment-deleted', id);
-      }
       return { success: true };
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to delete comment';
@@ -109,7 +125,6 @@ export const CommentProvider = ({ children }) => {
   const likeComment = async (id) => {
     try {
       await api.post(`/comments/${id}/like`);
-      await fetchComments(); // Refresh comments to update likes
       return { success: true };
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to like comment';
@@ -120,7 +135,6 @@ export const CommentProvider = ({ children }) => {
   const dislikeComment = async (id) => {
     try {
       await api.post(`/comments/${id}/dislike`);
-      await fetchComments(); // Refresh comments to update dislikes
       return { success: true };
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to dislike comment';
@@ -128,16 +142,7 @@ export const CommentProvider = ({ children }) => {
     }
   };
 
-  const removeReaction = async (id) => {
-    try {
-      await api.delete(`/comments/${id}/reaction`);
-      await fetchComments(); // Refresh comments to update reactions
-      return { success: true };
-    } catch (error) {
-      const message = error.response?.data?.message || 'Failed to remove reaction';
-      return { success: false, error: message };
-    }
-  };
+
 
   const changePage = (page) => {
     setPagination(prev => ({ ...prev, page }));
@@ -159,7 +164,6 @@ export const CommentProvider = ({ children }) => {
     deleteComment,
     likeComment,
     dislikeComment,
-    removeReaction,
     changePage,
     changeSort,
     fetchComments

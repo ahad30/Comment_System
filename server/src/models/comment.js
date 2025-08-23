@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 
 const commentSchema = new mongoose.Schema({
@@ -33,7 +34,7 @@ const commentSchema = new mongoose.Schema({
   timestamps: true
 });
 
-
+// Index for better performance
 commentSchema.index({ author: 1, createdAt: -1 });
 commentSchema.index({ parentComment: 1 });
 

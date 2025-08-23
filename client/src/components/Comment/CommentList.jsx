@@ -36,9 +36,7 @@ const CommentList = () => {
           comments.map(comment => (
             <CommentItem 
               key={comment._id} 
-              comment={comment} 
-              replyingTo={replyingTo}
-              setReplyingTo={setReplyingTo}
+              comment={comment}
             />
           ))
         )}
