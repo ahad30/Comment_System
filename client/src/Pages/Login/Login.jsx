@@ -1,144 +1,94 @@
-import { useContext } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { FaGoogle } from "react-icons/fa";
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
-import toast from 'react-hot-toast';
-import axios from 'axios';
 const Login = () => {
-  // const { signIn, signInWithGoogle, signInWithGithub } = useContext(AuthContext);
-  const location = useLocation();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const { login, error, setError } = useAuth();
   const navigate = useNavigate();
- 
 
-  const handleLogin = async e => {
-    e.preventDefault();
-    // console.log(e.currentTarget);
-    const form = new FormData(e.currentTarget);
-    const email = form.get('email');
-    const password = form.get('password');
-    // console.log(email, password);
-    axios.post(`http://localhost:5000/login`, {  email, password })
-    .then((response) => {
-        const data = response?.data;
-        // localStorage.setItem("userInfo" , JSON.stringify(data?.user))
-        if (data?.message) {
-            toast.success(data?.message);
-            navigate(location.state? location.state : "/" ); 
-        }
-    })
-    .catch((error) => {
-        const errorMsg = error?.response?.data?.message || 'An error occurred.';
-        toast.error(errorMsg);
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
     });
-  }
+    setError('');
+  };
 
-
-  const handleGoogleSignIn = async() => {
-   try{
-    signInWithGoogle()
-    .then(async result => {
-      console.log(result.user)
-      const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/jwt`,
-      {
-        email: result?.user?.email,
-      },
-      { withCredentials: true }
-    )
-     console.log(data)
-      toast.success('log in successfully')
-      navigate(location?.state ? location.state : '/');
-    })
-    .catch(error => {
-      console.error(error)
-    })
-   }
-    catch (err) {
-      console.log(err)
-      toast.error(err?.message)
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const result = await login(formData);
+    if (result.success) {
+      navigate('/');
     }
-  }
-
-  const handleGithubSignIn = () => {
-    signInWithGithub()
-      .then(result => {
-        console.log(result.user)
-        toast.success('log in successfully')
-        navigate(location?.state ? location.state : '/');
-      })
-      .catch(error => {
-        console.error(error)
-      })
-  }
+  };
 
   return (
-
-    <div className="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
-      {/* <Helmet>
-        <title>Akeneo | Login</title>
-      </Helmet> */}
-      <div className="mx-auto max-w-lg text-center">
-        <h1 className="text-2xl font-bold sm:text-3xl">Log in here!</h1>
-
-        <p className="mt-4 text-gray-500">
-          Dive into world of paints & craft
-        </p>
-      </div>
-
-      <form onSubmit={handleLogin} className="mx-auto mb-0 mt-8 max-w-md space-y-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-6 rounded shadow-md">
         <div>
-          <label htmlFor="email" className="sr-only">Email</label>
-
-          <div className="form-control">
-            <input
-              type="email"
-              name='email'
-              required
-              className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
-              placeholder="Enter email"
-            />
-          </div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Sign in to your account
+          </h2>
         </div>
-
-        <div>
-          <label htmlFor="password" className="sr-only">Password</label>
-
-          <div className="form-control">
-            <input
-              type="password"
-              name='password'
-              required
-              className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
-              placeholder="Enter password"
-            />
-
-
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div>
+              <label htmlFor="email" className="sr-only">Email address</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                placeholder="Email address"
+                value={formData.email}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="sr-only">Password</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+              />
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-500">
-            No account?
-            <Link to="/register">
-              <button className="underline" href="#">Register</button>
+          <div>
+            <button
+              type="submit"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Sign in
+            </button>
+          </div>
+          
+          <div className="text-center">
+            <Link to="/register" className="text-blue-600 hover:text-blue-800">
+              Don't have an account? Sign up
             </Link>
-          </p>
-
-          <button
-            type="submit"
-            className="inline-block rounded-lg bg-blue-500 px-5 py-3 text-sm font-medium text-white"
-          >
-            Log in
-          </button>
-        </div>
-        {/* <p className='text-center font-bold text-xl'>Or log in with</p> */}
-
-
-      </form>
-      {/* <div className='flex gap-3 justify-center'>
-        <button onClick={handleGoogleSignIn}><FaGoogle size={25}></FaGoogle></button>
-      </div> */}
+          </div>
+        </form>
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;

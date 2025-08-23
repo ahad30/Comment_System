@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 const Comment = require('../models/comment');
 
+// controllers/comments.js - getComments function
 exports.getComments = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -49,6 +50,7 @@ exports.getComments = async (req, res) => {
   }
 };
 
+// controllers/comments.js - createComment function
 exports.createComment = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -74,8 +76,16 @@ exports.createComment = async (req, res) => {
       );
     }
     
+    // Properly populate the response
     const populatedComment = await Comment.findById(savedComment._id)
-      .populate('author', 'username');
+      .populate('author', 'username')
+      .populate({
+        path: 'replies',
+        populate: {
+          path: 'author',
+          select: 'username'
+        }
+      });
     
     res.status(201).json(populatedComment);
   } catch (error) {

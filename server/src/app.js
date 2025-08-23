@@ -15,7 +15,7 @@ app.use(express.json())
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: [process.env.FRONTEND_URL || "http://localhost:5173"],
+    origin: ["http://localhost:5173"],
     credentials: true,
     optionSuccessStatus: 200,
     methods: ["GET", "POST", "PUT", "DELETE"]
@@ -26,7 +26,7 @@ const io = socketIo(server, {
 // Middleware
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL || 'http://localhost:5173'],
+    origin: ['http://localhost:5173'],
     credentials: true,
     optionSuccessStatus: 200,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -39,8 +39,8 @@ app.use(express.json());
 app.get('/', (req, res) => {
   res.send('Welcome to the Comment system!');
 });
-app.use('/api/v1',authRoutes)
-app.use('/api/v1',commentRoutes)
+app.use('/api',authRoutes)
+app.use('/api',commentRoutes)
 
 
 // Socket.io for real-time updates
@@ -64,4 +64,4 @@ io.on('connection', (socket) => {
   });
 });
 
-module.exports =  {app, io};
+module.exports =  {app, io , server};

@@ -19,10 +19,10 @@ const commentValidation = [
     .withMessage('Comment must be between 1 and 1000 characters')
 ];
 
-router.get('/comment',auth, getComments);
-router.post('/comment', auth, commentValidation, createComment);
-router.put('/comment/:id', auth, commentValidation, updateComment);
-router.delete('/comment/:id', auth, deleteComment);
-router.post('/comment/:id/like', auth, likeComment);
-router.post('/comment/:id/dislike', auth, dislikeComment);
+router.get('/comments',auth, getComments);
+router.post('/comments', auth, commentValidation, createComment);
+router.put('/comments/:id', auth, commentValidation, updateComment);
+router.delete('/comments/:id', auth, deleteComment);
+router.post('/comments/:id/like', auth, likeComment);
+router.post('/comments/:id/dislike', auth, dislikeComment);
 module.exports = router;
