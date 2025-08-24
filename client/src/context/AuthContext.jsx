@@ -15,7 +15,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      // The api service will automatically add the token to headers
       fetchUser();
     } else {
       setLoading(false);
@@ -24,45 +23,60 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUser = async () => {
     try {
-      const res = await api.get('/auth/me'); // Use api instead of axios directly
+      const res = await api.get('/auth/me');
       setUser(res.data);
     } catch (error) {
       localStorage.removeItem('token');
-      // The api interceptor will handle redirect on 401 errors
     } finally {
       setLoading(false);
     }
   };
 
-  const register = async (formData) => {
-    try {
-      setError('');
-      const res = await api.post('/auth/register', formData); // Use api service
-      const { token, ...userData } = res.data;
-      localStorage.setItem('token', token);
-      setUser(userData);
-      return { success: true };
-    } catch (error) {
-      const message = error.response?.data?.message || 'Registration failed';
-      setError(message);
-      return { success: false, error: message };
-    }
-  };
+const register = async (formData) => {
+  try {
+    setError('');
+    const res = await api.post('/auth/register', formData);
+    const { token, ...userData } = res.data;
+    localStorage.setItem('token', token);
+    setUser(userData);
+    return { success: true };
+  } catch (error) {
+    console.log(error);
 
-  const login = async (formData) => {
-    try {
-      setError('');
-      const res = await api.post('/auth/login', formData); // Use api service
-      const { token, ...userData } = res.data;
-      localStorage.setItem('token', token);
-      setUser(userData);
-      return { success: true };
-    } catch (error) {
-      const message = error.response?.data?.message || 'Login failed';
-      setError(message);
-      return { success: false, error: message };
+    let message = 'Registration failed';
+
+    if (error?.response?.data?.errors) {
+      message = error.response.data.errors.map(err => err.msg).join(', ');
+    } else if (error?.response?.data?.message) {
+      message = error.response.data.message;
     }
-  };
+     setError(message);
+    return { success: false, error: message };
+  }
+};
+
+const login = async (formData) => {
+  try {
+    setError('');
+    const res = await api.post('/auth/login', formData);
+    const { token, ...userData } = res.data;
+    localStorage.setItem('token', token);
+    setUser(userData);
+    return { success: true };
+  } catch (error) {
+    let message = 'Login failed';
+
+    if (error?.response?.data?.errors) {
+      message = error.response.data.errors.map(err => err.msg).join(', ');
+    } else if (error?.response?.data?.message) {
+      message = error.response.data.message;
+    }
+
+    setError(message);
+    return { success: false, error: message };
+  }
+};
+
 
   const logout = () => {
     localStorage.removeItem('token');

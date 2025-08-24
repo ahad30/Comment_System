@@ -2,15 +2,19 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useComments } from '../../context/CommentContext';
+import { toast } from 'sonner';
+import DeleteModal from '../Modal/DeleteModal';
 
 const CommentItem = ({ comment}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment?.content || '');
+  const [showModal, setShowModal] = useState(false);
   const { user } = useAuth();
   const { updateComment, deleteComment, likeComment, dislikeComment } = useComments();
   const isAuthor = user && user?._id === comment?.author?._id;
   const hasLiked = user && comment?.likes?.includes(user?._id);
   const hasDisliked = user && comment?.dislikes?.includes(user?._id);
+
 
 
   // If comment is undefined, return null or a placeholder
@@ -19,33 +23,51 @@ const CommentItem = ({ comment}) => {
   }
 
   const handleEdit = async () => {
+    if (editContent.trim() === '') {
+      toast.error("Comment content cannot be empty");
+      return;
+    }
     const result = await updateComment(comment._id, editContent);
     if (result.success) {
       setIsEditing(false);
+       toast.success("Comment Edited Successfully");
     } else {
       console.error(result.error);
     }
   };
 
-  const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this comment?')) {
-      const result = await deleteComment(comment._id);
+  const handleDelete = async (commentId) => {
+      const result = await deleteComment(commentId);
       if (!result.success) {
         console.error(result.error);
       }
-    }
+      toast.success("Comment Deleted Successfully");
+      setShowModal(false);  
+  
   };
 
   const handleLike = async () => {
+    if (hasLiked){
+       toast.error("You have already liked this comment");
+    }
     const result = await likeComment(comment._id);
-    if (!result.success) {
+    if (result.success) {
+      toast.success("Comment Liked Successfully");
+    }
+    else{
       console.error(result.error);
     }
   };
 
   const handleDislike = async () => {
+    if (hasDisliked){
+       toast.error("You have already disliked this comment");
+    }
     const result = await dislikeComment(comment._id);
-    if (!result.success) {
+    if (result.success) {
+      toast.success("Comment Disliked Successfully");
+    }
+    else{
       console.error(result.error);
     }
   };
@@ -119,7 +141,7 @@ const CommentItem = ({ comment}) => {
               Edit
             </button>
             <button
-              onClick={handleDelete}
+             onClick={() => setShowModal(!showModal)}
               className="text-gray-500 hover:text-red-600"
             >
               Delete
@@ -127,6 +149,12 @@ const CommentItem = ({ comment}) => {
           </>
         )}
       </div>
+
+       { showModal &&
+                         <DeleteModal showModal={showModal} setShowModal ={setShowModal} 
+                        comment={comment} handleDelete={handleDelete} 
+                        />
+                       }
 
     </div>
   );

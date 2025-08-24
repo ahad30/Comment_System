@@ -22,7 +22,6 @@ export const CommentProvider = ({ children }) => {
   });
   const [sortBy, setSortBy] = useState('newest');
   const { user } = useAuth();
-  const [socket, setSocket] = useState(null);
 
   useEffect(() => {
     // Initialize socket connection
@@ -30,7 +29,6 @@ export const CommentProvider = ({ children }) => {
       withCredentials: true
     });
     
-    setSocket(newSocket);
 
     // Set up event listeners
     newSocket.on('comment-added', (comment) => {
@@ -92,25 +90,41 @@ export const CommentProvider = ({ children }) => {
     }
   };
 
-  const addComment = async (content, parentCommentId = null) => {
-    try {
-      const res = await api.post('/comments', { content, parentCommentId });
-      return { success: true };
-    } catch (error) {
-      const message = error.response?.data?.message || 'Failed to add comment';
-      return { success: false, error: message };
-    }
-  };
+const addComment = async (content, parentCommentId = null) => {
+  try {
+    const res = await api.post('/comments', { content, parentCommentId });
+    return { success: true };
+  } catch (error) {
+    let message = 'Failed to add comment';
 
-  const updateComment = async (id, content) => {
-    try {
-      await api.put(`/comments/${id}`, { content });
-      return { success: true };
-    } catch (error) {
-      const message = error.response?.data?.message || 'Failed to update comment';
-      return { success: false, error: message };
+    if (error?.response?.data?.errors) {
+      message = error.response.data.errors.map(err => err.msg).join(', ');
+    } else if (error?.response?.data?.message) {
+      message = error.response.data.message;
     }
-  };
+    setError(message);
+    return { success: false, error: message };
+  }
+};
+
+const updateComment = async (id, content) => {
+  try {
+    await api.put(`/comments/${id}`, { content });
+    return { success: true };
+  } catch (error) {
+    let message = 'Failed to update comment';
+
+    if (error?.response?.data?.errors) {
+      message = error.response.data.errors.map(err => err.msg).join(', ');
+    } else if (error?.response?.data?.message) {
+      message = error.response.data.message;
+    }
+
+    setError(message);  
+    return { success: false, error: message };
+  }
+};
+
 
   const deleteComment = async (id) => {
     try {
@@ -157,6 +171,7 @@ export const CommentProvider = ({ children }) => {
     comments,
     loading,
     error,
+    setError,
     pagination,
     sortBy,
     addComment,

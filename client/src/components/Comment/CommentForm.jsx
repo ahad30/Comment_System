@@ -1,6 +1,7 @@
 // components/CommentForm.js
 import React, { useState } from 'react';
 import { useComments } from '../../context/CommentContext';
+import { toast } from 'sonner';
 
 const CommentForm = () => {
   const [content, setContent] = useState('');
@@ -8,7 +9,10 @@ const CommentForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!content.trim()) return;
+    if (!content.trim()){
+      toast.error("Please write something before submitting");
+      return;
+    };
 
     const result = await addComment(content);
     if (result.success) {
@@ -21,7 +25,7 @@ const CommentForm = () => {
     <form onSubmit={handleSubmit} className="mb-6">
       <div className="mb-2">
         <textarea
-          required
+     
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder={ "Write your comment..."}

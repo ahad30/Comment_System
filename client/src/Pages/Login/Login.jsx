@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: 'ahad@gmail.com',
+    password: '123456'
   });
   const { login, error, setError } = useAuth();
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const result = await login(formData);
-    if (result.success) {
+    if (result?.success) {
       navigate('/');
     }
   };

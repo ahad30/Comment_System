@@ -5,7 +5,7 @@ const DeleteModal = ({
   setShowModal,
   handleDelete,
   comment,
-  loading
+
 }) => {
  
   return (
@@ -29,11 +29,11 @@ const DeleteModal = ({
               Cancel
             </button>
             <button
-              disabled={loading}
-              onClick={()=> handleDelete(comment?.id)}
+             
+              onClick={()=> handleDelete(comment?._id)}
               className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? "Deleting" : "Delete"}
+             Delete
             </button>
           </div>
         </div>

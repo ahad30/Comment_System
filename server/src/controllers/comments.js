@@ -148,12 +148,12 @@ exports.likeComment = async (req, res) => {
       return res.status(404).json({ message: 'Comment not found' });
     }
     
-    // Check if user already liked
+    
     if (comment.likes.includes(req.user._id)) {
       return res.status(400).json({ message: 'Comment already liked' });
     }
     
-    // Remove from dislikes if exists
+   
     if (comment.dislikes.includes(req.user._id)) {
       comment.dislikes = comment.dislikes.filter(
         id => id.toString() !== req.user._id.toString()
@@ -184,12 +184,12 @@ exports.dislikeComment = async (req, res) => {
       return res.status(404).json({ message: 'Comment not found' });
     }
     
-    // Check if user already disliked
+    
     if (comment.dislikes.includes(req.user._id)) {
       return res.status(400).json({ message: 'Comment already disliked' });
     }
     
-    // Remove from likes if exists
+   
     if (comment.likes.includes(req.user._id)) {
       comment.likes = comment.likes.filter(
         id => id.toString() !== req.user._id.toString()
@@ -222,7 +222,7 @@ exports.deleteComment = async (req, res) => {
       return res.status(404).json({ message: 'Comment not found' });
     }
     
-    // Check if user is the author
+  
     if (comment.author.toString() !== req.user._id.toString()) {
       return res.status(401).json({ message: 'Not authorized' });
     }
@@ -231,7 +231,7 @@ exports.deleteComment = async (req, res) => {
 
     await Comment.findByIdAndDelete(req.params.id);
     
-    // Get io instance from app and emit event
+  
     const io = req.app.get('io');
     if (io) {
       io.emit('comment-deleted', { _id: req.params.id });

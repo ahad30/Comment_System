@@ -29,7 +29,7 @@ const Register = () => {
     }
     
     const result = await register(formData);
-    if (result.success) {
+    if (result?.success) {
       navigate('/');
     }
   };
