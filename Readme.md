@@ -144,4 +144,3 @@ To test the application:
 2. Register a new user account
 3. Test all comment functionalities
 4. Verify real-time updates by opening multiple browser windows
-```
