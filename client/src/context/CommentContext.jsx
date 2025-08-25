@@ -77,7 +77,7 @@ export const CommentProvider = ({ children }) => {
     try {
       setLoading(true);
       const res = await api.get(`/comments?page=${pagination.page}&limit=${pagination.limit}&sortBy=${sortBy}`);
-      setComments(res.data.comments);
+      setComments(res?.data?.comments);
       setPagination(prev => ({
         ...prev,
         totalPages: res.data.totalPages,

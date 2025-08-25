@@ -49,7 +49,7 @@ const CommentList = () => {
         )}
       </div>
 
-      {pagination.totalPages > 1 && (
+  
         <div className="mt-6">
   <Paginator
             first={first}
@@ -57,42 +57,18 @@ const CommentList = () => {
             totalRecords={pagination.totalComments}
             onPageChange={onPageChange}
             template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-          />
-            <Paginator
-  first={(currentPage - 1) * 10}
-  rows={10}
-  totalRecords={characterCount}
-  onPageChange={onPageChange}
-  template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-  className="bg-gray-800 text-white"
-  disabled={loading}
-  pt={{
-    root: {
-      className: "bg-gray-800 border border-gray-700 rounded-lg p-2"
-    },
-    firstPageButton: {
-      className: `text-gray-300 px-3 py-2 rounded transition-colors ${loading ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:text-yellow-400 hover:bg-gray-700'}`
-    },
-    prevPageButton: {
-      className: `text-gray-300 px-3 py-2 rounded transition-colors ${loading ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:text-yellow-400 hover:bg-gray-700'}`
-    },
-    nextPageButton: {
-      className: `text-gray-300 px-3 py-2 rounded transition-colors ${loading ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:text-yellow-400 hover:bg-gray-700'}`
-    },
-    lastPageButton: {
-      className: `text-gray-300 px-3 py-2 rounded transition-colors ${loading ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:text-yellow-400 hover:bg-gray-700'}`
-    },
-    pageButton: {
-      className: `text-gray-300 px-3 py-2 mx-1 rounded transition-colors ${loading ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:text-yellow-400 hover:bg-gray-700'}`
-    },
-    pages: { className: "flex space-x-1" }
+             pt={{
+    pageButton: ({ active }) => ({
+      className: active
+        ? "bg-blue-500 text-white rounded-md px-3 py-1"
+        : "text-gray-700 hover:bg-gray-200 rounded-md px-3 py-1"
+    })
   }}
-  pagelinkclassname="text-gray-300 hover:text-yellow-400 hover:bg-gray-700 px-3 py-2 mx-1 rounded transition-colors"
-  currentPageReportTemplate=""
-/>
+          />
+
 
         </div>
-      )}
+  
     </div>
   );
 };
