@@ -92,7 +92,7 @@ const CommentItem = ({ comment }) => {
       </div>
 
       {isEditing ? (
-        <div className="mb-4">
+        <div className="mb-4 break-words whitespace-normal">
           <textarea
             value={editContent}
             onChange={(e) => setEditContent(e.target.value)}
@@ -115,7 +115,7 @@ const CommentItem = ({ comment }) => {
           </div>
         </div>
       ) : (
-        <p className="mb-4">{comment.content}</p>
+        <p className="mb-4 break-words whitespace-normal">{comment.content}</p>
       )}
 
       <div className="flex items-center space-x-4 text-sm">
