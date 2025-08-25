@@ -31,9 +31,6 @@ const CommentList = () => {
     return <Loader />;
   }
 
-  if (error) {
-    return <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">{error}</div>;
-  }
 
   return (
     <div className="container mx-auto p-4">
@@ -41,6 +38,7 @@ const CommentList = () => {
         <h1 className="text-2xl font-bold mb-4">Comments</h1>
         <SortOptions />
         <CommentForm />
+        
       </div>
 
       <div className="space-y-8 max-h-[100vh] overflow-y-scroll py-4">
