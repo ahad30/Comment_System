@@ -30,8 +30,7 @@ A full-stack comment system built with the MERN stack (MongoDB, Express.js, Reac
 - Nodemon - Automatic server restarts during development
 - Concurrently - Run multiple commands concurrently
 
-
-
+       
 ## 🚀 Features
 
 ### Backend Features
