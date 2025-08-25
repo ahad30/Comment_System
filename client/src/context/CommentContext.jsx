@@ -32,34 +32,61 @@ export const CommentProvider = ({ children }) => {
 
     // Set up event listeners
     newSocket.on('comment-added', (comment) => {
-      console.log('Comment added via socket:', comment);
-      setComments(prev => {
-        const exists = prev.find(c => c._id === comment._id);
-        if (!exists) {
-          return [comment, ...prev];
-        }
-        return prev;
-      });
+
+  
+  setPagination(prev => ({
+    ...prev,
+    totalComments: prev.totalComments + 1,
+    totalPages: Math.ceil((prev.totalComments + 1) / prev.limit)
+  }));
+
+  if (pagination.page === 1 && sortBy === 'newest') {
+    setComments(prev => {
+      const exists = prev.find(c => c._id === comment._id);
+      if (!exists) {
+        
+        const newComments = [comment, ...prev];
+        return newComments.slice(0, pagination.limit);
+      }
+      return prev;
     });
-    
-    newSocket.on('comment-updated', (comment) => {
-      console.log('Comment updated via socket:', comment);
-      setComments(prev => prev.map(c => 
-        c._id === comment._id ? comment : c
-      ));
+  }
+});
+
+newSocket.on('comment-updated', (comment) => {
+  console.log('Comment updated via socket:', comment);
+  setComments(prev => prev.map(c => 
+    c._id === comment._id ? comment : c
+  ));
+});
+
+newSocket.on('comment-deleted', (data) => {
+  console.log('Comment deleted via socket:', data);
+  
+  setPagination(prev => ({
+    ...prev,
+    totalComments: Math.max(0, prev.totalComments - 1),
+    totalPages: Math.ceil(Math.max(0, prev.totalComments - 1) / prev.limit)
+  }));
+  
+  setComments(prev => prev.filter(c => c._id !== data._id));
+  
+  setTimeout(() => {
+    setComments(currentComments => {
+      if (currentComments.length === 0 && pagination.page > 1) {
+        setPagination(prevPag => ({ ...prevPag, page: prevPag.page - 1 }));
+      }
+      return currentComments;
     });
-    
-    newSocket.on('comment-deleted', (data) => {
-      console.log('Comment deleted via socket:', data);
-      setComments(prev => prev.filter(c => c._id !== data._id));
-    });
-    
-    newSocket.on('reaction-updated', (comment) => {
-      console.log('Reaction updated via socket:', comment);
-      setComments(prev => prev.map(c => 
-        c._id === comment._id ? comment : c
-      ));
-    });
+  }, 100);
+});
+
+newSocket.on('reaction-updated', (comment) => {
+  console.log('Reaction updated via socket:', comment);
+  setComments(prev => prev.map(c => 
+    c._id === comment._id ? comment : c
+  ));
+});
   
 
     return () => {

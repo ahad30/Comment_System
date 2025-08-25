@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CommentItem from './CommentItem';
 import CommentForm from './CommentForm';
 import SortOptions from '../SortOptions';
@@ -13,7 +13,14 @@ const CommentList = () => {
   const { comments, loading, error, pagination, changePage } = useComments();
   const [first, setFirst] = useState(0);
 
-  // Handle page change for PrimeReact Paginator
+
+  useEffect(() => {
+    const expectedFirst = (pagination.page - 1) * pagination.limit;
+    if (first !== expectedFirst) {
+      setFirst(expectedFirst);
+    }
+  }, [pagination.page, pagination.limit, pagination.totalComments]);
+
   const onPageChange = (event) => {
     setFirst(event.first);
     const newPage = Math.floor(event.first / pagination.limit) + 1;
@@ -36,39 +43,37 @@ const CommentList = () => {
         <CommentForm />
       </div>
 
-      <div className="space-y-8 max-h-[100vh] overflow-y-scroll py-8">
+      <div className="space-y-8 max-h-[100vh] overflow-y-scroll py-4">
         {comments.length === 0 ? (
           <p className="text-gray-500">No comments yet. Be the first to comment!</p>
         ) : (
           comments.map(comment => (
-            <CommentItem 
-              key={comment._id} 
+            <CommentItem
+              key={comment._id}
               comment={comment}
             />
           ))
         )}
       </div>
-
-  
+      
+    
         <div className="mt-6">
-  <Paginator
+          <Paginator
             first={first}
             rows={pagination.limit}
             totalRecords={pagination.totalComments}
             onPageChange={onPageChange}
             template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-             pt={{
-    pageButton: ({ active }) => ({
-      className: active
-        ? "bg-blue-500 text-white rounded-md px-3 py-1"
-        : "text-gray-700 hover:bg-gray-200 rounded-md px-3 py-1"
-    })
-  }}
+            pt={{
+              pageButton: ({ active }) => ({
+                className: active
+                  ? "bg-blue-500 text-white rounded-md px-3 py-1"
+                  : "text-gray-700 hover:bg-gray-200 rounded-md px-3 py-1"
+              })
+            }}
           />
-
-
         </div>
-  
+
     </div>
   );
 };
