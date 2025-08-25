@@ -83,7 +83,7 @@ const CommentItem = ({ comment }) => {
   };
 
   return (
-    <div className={`bg-white p-4 rounded shadow mb-4`}>
+    <div className={`bg-white border border-gray-400 p-4 rounded shadow-md mb-4`}>
       <div className="flex justify-between items-start mb-2">
         <div className="font-semibold">{comment.author?.username || 'Unknown User'}</div>
         <div className="text-sm text-gray-500">

@@ -36,7 +36,7 @@ const CommentList = () => {
         <CommentForm />
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-8 max-h-[100vh] overflow-y-scroll py-8">
         {comments.length === 0 ? (
           <p className="text-gray-500">No comments yet. Be the first to comment!</p>
         ) : (
