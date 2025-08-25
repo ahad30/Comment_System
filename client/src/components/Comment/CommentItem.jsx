@@ -1,11 +1,11 @@
 // components/CommentItem.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useComments } from '../../context/CommentContext';
 import { toast } from 'sonner';
 import DeleteModal from '../Modal/DeleteModal';
 
-const CommentItem = ({ comment}) => {
+const CommentItem = ({ comment }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment?.content || '');
   const [showModal, setShowModal] = useState(false);
@@ -16,8 +16,12 @@ const CommentItem = ({ comment}) => {
   const hasDisliked = user && comment?.dislikes?.includes(user?._id);
 
 
+  useEffect(() => {
+    if (isEditing) {
+      setEditContent(comment?.content || '');
+    }
+  }, [isEditing, comment?.content]);
 
-  // If comment is undefined, return null or a placeholder
   if (!comment) {
     return <div className="bg-gray-100 p-4 rounded shadow mb-4">Comment not available</div>;
   }
@@ -30,25 +34,30 @@ const CommentItem = ({ comment}) => {
     const result = await updateComment(comment._id, editContent);
     if (result.success) {
       setIsEditing(false);
-       toast.success("Comment Edited Successfully");
+      toast.success("Comment Edited Successfully");
     } else {
       console.error(result.error);
     }
   };
 
+  const handleCancel = () => {
+    setIsEditing(false);
+    setEditContent(comment.content);
+  };
+
   const handleDelete = async (commentId) => {
-      const result = await deleteComment(commentId);
-      if (!result.success) {
-        console.error(result.error);
-      }
-      toast.success("Comment Deleted Successfully");
-      setShowModal(false);  
-  
+    const result = await deleteComment(commentId);
+    if (!result.success) {
+      console.error(result.error);
+    }
+    toast.success("Comment Deleted Successfully");
+    setShowModal(false);  
   };
 
   const handleLike = async () => {
     if (hasLiked){
-       toast.error("You have already liked this comment");
+      toast.error("You have already liked this comment");
+      return;
     }
     const result = await likeComment(comment._id);
     if (result.success) {
@@ -61,7 +70,8 @@ const CommentItem = ({ comment}) => {
 
   const handleDislike = async () => {
     if (hasDisliked){
-       toast.error("You have already disliked this comment");
+      toast.error("You have already disliked this comment");
+      return;
     }
     const result = await dislikeComment(comment._id);
     if (result.success) {
@@ -71,9 +81,6 @@ const CommentItem = ({ comment}) => {
       console.error(result.error);
     }
   };
-
- 
-
 
   return (
     <div className={`bg-white p-4 rounded shadow mb-4`}>
@@ -94,7 +101,7 @@ const CommentItem = ({ comment}) => {
           />
           <div className="flex justify-end space-x-2 mt-2">
             <button
-              onClick={() => setIsEditing(false)}
+              onClick={handleCancel}
               className="px-3 py-1 bg-gray-200 rounded"
             >
               Cancel
@@ -113,7 +120,7 @@ const CommentItem = ({ comment}) => {
 
       <div className="flex items-center space-x-4 text-sm">
         <button
-          onClick={ handleLike}
+          onClick={handleLike}
           className={`flex items-center space-x-1 ${hasLiked ? 'text-blue-600' : 'text-gray-500'}`}
           disabled={!user}
         >
@@ -122,15 +129,13 @@ const CommentItem = ({ comment}) => {
         </button>
 
         <button
-          onClick={ handleDislike}
+          onClick={handleDislike}
           className={`flex items-center space-x-1 ${hasDisliked ? 'text-red-600' : 'text-gray-500'}`}
           disabled={!user}
         >
           <span>👎</span>
           <span>{comment.dislikes?.length || 0}</span>
         </button>
-
-      
 
         {isAuthor && (
           <>
@@ -141,7 +146,7 @@ const CommentItem = ({ comment}) => {
               Edit
             </button>
             <button
-             onClick={() => setShowModal(!showModal)}
+              onClick={() => setShowModal(!showModal)}
               className="text-gray-500 hover:text-red-600"
             >
               Delete
@@ -150,12 +155,14 @@ const CommentItem = ({ comment}) => {
         )}
       </div>
 
-       { showModal &&
-                         <DeleteModal showModal={showModal} setShowModal ={setShowModal} 
-                        comment={comment} handleDelete={handleDelete} 
-                        />
-                       }
-
+      {showModal && (
+        <DeleteModal 
+          showModal={showModal} 
+          setShowModal={setShowModal} 
+          comment={comment} 
+          handleDelete={handleDelete} 
+        />
+      )}
     </div>
   );
 };

@@ -1,12 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { toast } from 'sonner';
 
 const Header = () => {
   const { user, logout } = useAuth();
 
   const handleLogout = () => {
     logout();
+    toast.success("Logout Successful");
   };
 
   return (

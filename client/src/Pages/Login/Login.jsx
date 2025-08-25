@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { toast } from 'sonner';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -22,6 +23,7 @@ const Login = () => {
     e.preventDefault();
     const result = await login(formData);
     if (result?.success) {
+      toast.success("Login Successful");
       navigate('/');
     }
   };

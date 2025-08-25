@@ -42,13 +42,13 @@ const CommentList = () => {
         )}
       </div>
 
-      {pagination.totalPages > 1 && (
+      {/* {pagination.totalPages > 1 && ( */}
         <Pagination 
           currentPage={pagination.page}
           totalPages={pagination.totalPages}
           onPageChange={changePage}
         />
-      )}
+      {/* )} */}
     </div>
   );
 };

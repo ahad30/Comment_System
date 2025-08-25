@@ -64,6 +64,7 @@ const login = async (formData) => {
     setUser(userData);
     return { success: true };
   } catch (error) {
+    console.log(error);
     let message = 'Login failed';
 
     if (error?.response?.data?.errors) {
@@ -86,6 +87,7 @@ const login = async (formData) => {
   const value = {
     user,
     loading,
+    setLoading,
     error,
     register,
     login,
