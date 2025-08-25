@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import CommentItem from './CommentItem';
 import CommentForm from './CommentForm';
 import SortOptions from '../SortOptions';

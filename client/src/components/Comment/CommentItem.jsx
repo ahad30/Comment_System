@@ -1,5 +1,4 @@
-// components/CommentItem.js
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useComments } from '../../context/CommentContext';
 import { toast } from 'sonner';
@@ -125,7 +124,7 @@ const CommentItem = ({ comment }) => {
           disabled={!user}
         >
           <span>👍</span>
-          <span>{comment.likes?.length || 0}</span>
+          <span>{comment?.likes?.length || 0}</span>
         </button>
 
         <button
@@ -134,7 +133,7 @@ const CommentItem = ({ comment }) => {
           disabled={!user}
         >
           <span>👎</span>
-          <span>{comment.dislikes?.length || 0}</span>
+          <span>{comment?.dislikes?.length || 0}</span>
         </button>
 
         {isAuthor && (

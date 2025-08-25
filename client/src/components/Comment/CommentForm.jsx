@@ -1,4 +1,3 @@
-// components/CommentForm.js
 import React, { useState } from 'react';
 import { useComments } from '../../context/CommentContext';
 import { toast } from 'sonner';
