@@ -2,6 +2,36 @@
 
 A full-stack comment system built with the MERN stack (MongoDB, Express.js, React, Node.js , Socket-Io) featuring real-time updates, authentication, and interactive commenting features.
 
+## 🛠️ Used Technologies
+
+### Backend Technologies
+- Node.js - JavaScript runtime environment
+- Express.js - Web application framework
+- MongoDB - NoSQL database
+- Mongoose - MongoDB object modeling
+- JWT (JSON Web Tokens) - Authentication
+- Socket.io - Real-time bidirectional communication
+- bcryptjs - Password hashing
+- express-validator - Input validation
+- cors - Cross-Origin Resource Sharing
+- dotenv - Environment variables management
+
+### Frontend Technologies
+- React.js - Frontend library for building user interfaces
+- React Router DOM - Client-side routing
+- React Context API - State management
+- Axios - HTTP client for API requests
+- Tailwind CSS - Utility-first CSS framework
+- PrimeReact - UI component library (for pagination)
+- Socket.io-client - Client-side WebSocket communication
+- React Icons - Icon library
+
+### Development Tools
+- Nodemon - Automatic server restarts during development
+- Concurrently - Run multiple commands concurrently
+
+
+
 ## 🚀 Features
 
 ### Backend Features
@@ -144,3 +174,6 @@ To test the application:
 2. Register a new user account
 3. Test all comment functionalities
 4. Verify real-time updates by opening multiple browser windows
+
+
+
